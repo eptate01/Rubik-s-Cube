@@ -1,5 +1,10 @@
 import numpy as np
-
+from PIL import Image, ImageDraw
+img = Image.new("RGBA", (500,500))
+draw = ImageDraw.Draw(img)
+draw.rectangle((0,100,300,300), outline = 'teal', fill = 'orange', width = 25)
+draw.rectangle((300,300,400,400), outline = 'white', fill = 'black', width = 25)
+img.show()
 COLORS = {
 '0': 'white',
 '1': 'green',
