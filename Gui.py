@@ -3,33 +3,123 @@ import pygame
 from tkinter import *
 from math import floor
 import random
-current_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
-solved_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
-numTurns = int(input("For randomizer, how many random turns would you like? (difficulty) "))
+import math
+Amt_Moves = 24
+
+def draw(label):
+    for i in range(len(label)):
+        for j in range(len(label[0])):
+            label[i][j]["text"] = "  "
+            value = current_state[11*i + j]
+            match value:
+                case 0:
+                    label[i][j]["bg"] = "#000000"
+                case 1:
+                    label[i][j]["bg"] = "#006400"
+                case 2:
+                    label[i][j]["bg"] = "#5D478B"
+                case 3:
+                    label[i][j]["bg"] = "#FFFF00"
+                case 4:
+                    label[i][j]["bg"] = "#87CEFF"
+                case 5:
+                    label[i][j]["bg"] = "#FF0000"
+                case 6:
+                    label[i][j]["bg"] = "#008080"
+                case 7:
+                    label[i][j]["bg"] = "#FF69B4"
+                case 8:
+                    label[i][j]["bg"] = "#ADFF2F"
+                case 9:
+                    label[i][j]["bg"] = "#FF6103"
+                case 10:
+                    label[i][j]["bg"] = "#00FFFF"
+                case 11:
+                    label[i][j]["bg"] = "#808A87"
+    
+    print("hueristic value: ", hueristic())
+
+def turn():
+    global current_state
+    sideToTurn = dropdown.get()
+    if sideToTurn == "Choose a side to turn":
+        return
+    current_state = [current_state[i] for i in MOVES[int(sideToTurn)]]
+    
+    draw(label)
+
+def randomizer():
+    global current_state
+    for i in range(numTurns):
+        current_state = [current_state[i] for i in MOVES[int(random.randint(0, 23))]]
+        
+        draw(label)
+    
+def Astar_randomizer(current_state, turns):
+    for i in range(turns):
+        current_state = [current_state[i] for i in MOVES[int(random.randint(0, 23))]]
+    return current_state
+        
+def hueristic():
+    counter = 0
+    for i in range(132):
+        if solved_state[i] != current_state[i]:
+            counter += 1
+    return math.ceil(counter/15)
+
+def Astar(starting_state):
+    print("here")
+    open_set = set(starting_state)
+    closed_set = set()
+    id = 0
+    states = {}
+    states[id] = starting_state
+    g = {}
+    g[id] = 0
+
+    parents = {}
+    parents[starting_state] = None #starting state does not have a parent_node
+    temp_state = starting_state
+
+    while len(open_set) > 0:
+        next = None
+
+        #PRIORITY QUEUE
+        for i in open_set:
+            if next == None or g[i] + hueristic(i) < g[next] + hueristic(next):
+                next = i
+        
+        if next != solved_state:
+            for i in range(Amt_Moves):
+                temp_state = [next[j] for j in MOVES[i]]
+                if temp_state not in open_set and temp_state not in closed_set:
+                    open_set.add(temp_state)
+                    parents[temp_state] = next
+                    g[temp_state] = g[next] + hueristic(temp_state)
+                else:
+                    if g[temp_state] > g[next] + hueristic(temp_state):
+                        g[temp_state] = g[next] + hueristic(temp_state)
+                        parents[temp_state] = next
+
+                        if temp_state in closed_set:
+                            closed_set.remove(temp_state)
+                            open_set.add(temp_state)
+        elif next == solved_state:
+            moves = []
+
+            while parents[next]:
+                moves.append(findMove(next, parents[next]))
+            moves.reverse()
+            print('Moves: ', moves)
+        else:
+            raise Exception("Sorry, no numbers below zero")
 
 
-faces = []
-  
-
-# Create object 
-root = Tk()
-  
-# Adjust size 
-root.geometry("1000x550")
-  
-# Add image file
-bg = PhotoImage( file = "megaminx.png")
-  
-# Show image using label
-label1 = Label( root, image = bg)
-label1.place(x = 0,y = 0)
-  
-# Add text
-xPos = [280, 150, 200, 365, 415, 680, 285, 600, 550, 680, 810, 760]
-yPos = [160, 260, 415, 413, 260, 260, 290, 135, 290, 385, 290, 135]
-
-label = [[0 for col in range(11)] for row in range(12)]
-
+def findMove(state, end_state):
+    for i in range(Amt_Moves):
+        if end_state == [state[j] for j in MOVES[i]]:
+            return i
+    raise Exception("Sorry, no numbers below zero")          
 
 COLORS = {
 '0': 'black',
@@ -71,14 +161,34 @@ MOVES = {0:[0, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 11, 76, 67, 68, 15, 16, 17, 18, 19
         22: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 29, 30, 31, 21, 22, 23, 24, 25, 26, 27, 28, 101, 102, 103, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 125, 126, 127, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 58, 59, 60, 104, 105, 106, 107, 108, 109, 110, 113, 114, 115, 116, 117, 118, 119, 120, 111, 112, 121, 122, 123, 124, 18, 19, 20, 128, 129, 130, 131],
         23: [0, 12, 2, 3, 4, 5, 6, 7, 8, 20, 21, 11, 112, 13, 14, 15, 16, 17, 18, 19, 120, 111, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 79, 80, 81, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 9, 10, 1, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 57, 58, 113, 114, 115, 116, 117, 118, 119, 56, 121, 124, 125, 126, 127, 128, 129, 130, 131, 122, 123]}
 
-def hueristic():
-    counter = 0
-    for i in range(132):
-        if solved_state[i] != current_state[i]:
-            counter += 1
-    return int(counter/15)
+current_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
+solved_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
+numTurns = int(input("For randomizer, how many random turns would you like? (difficulty) "))
 
 
+
+#Creating Tkinter-----------------------------------------------------------------------------------------------------------
+
+
+faces = []
+# Create object 
+root = Tk()
+  
+# Adjust size 
+root.geometry("1000x550")
+  
+# Add image file
+bg = PhotoImage( file = "megaminx.png")
+  
+# Show image using label
+label1 = Label( root, image = bg)
+label1.place(x = 0,y = 0)
+  
+# Add text
+xPos = [280, 150, 200, 365, 415, 680, 285, 600, 550, 680, 810, 760]
+yPos = [160, 260, 415, 413, 260, 260, 290, 135, 290, 385, 290, 135]
+
+label = [[0 for col in range(11)] for row in range(12)]
 
 for i in range(0, 6):
     
@@ -149,57 +259,6 @@ for i in range(6, 12):
     label[i][10] = Label( root, text = "{}".format(current_state[11 * i + 10]), bg = "#000000")
     label[i][10].place(x = xPos[i] - 40, y = yPos[i] - 45)
 
-def draw():
-    for i in range(len(label)):
-        for j in range(len(label[0])):
-            label[i][j]["text"] = "  "
-            value = current_state[11*i + j]
-            match value:
-                case 0:
-                    label[i][j]["bg"] = "#000000"
-                case 1:
-                    label[i][j]["bg"] = "#006400"
-                case 2:
-                    label[i][j]["bg"] = "#5D478B"
-                case 3:
-                    label[i][j]["bg"] = "#FFFF00"
-                case 4:
-                    label[i][j]["bg"] = "#87CEFF"
-                case 5:
-                    label[i][j]["bg"] = "#FF0000"
-                case 6:
-                    label[i][j]["bg"] = "#008080"
-                case 7:
-                    label[i][j]["bg"] = "#FF69B4"
-                case 8:
-                    label[i][j]["bg"] = "#ADFF2F"
-                case 9:
-                    label[i][j]["bg"] = "#FF6103"
-                case 10:
-                    label[i][j]["bg"] = "#00FFFF"
-                case 11:
-                    label[i][j]["bg"] = "#808A87"
-    
-    print("hueristic value: ", hueristic())
-
-def turn():
-    global current_state
-    sideToTurn = dropdown.get()
-    if sideToTurn == "Choose a side to turn":
-        return
-    current_state = [current_state[i] for i in MOVES[int(sideToTurn)]]
-    
-    draw()
-
-
-def randomizer():
-    global current_state
-    for i in range(numTurns):
-        current_state = [current_state[i] for i in MOVES[int(random.randint(0, 23))]]
-        
-        draw()
-        
-
 
 # Dropdown menu options
 options = [
@@ -238,9 +297,13 @@ button = Button( root , text = "Turn Side" , command = turn )
 button.pack()
 button2 = Button( root , text = "Randomize" , command = randomizer)
 button2.pack()
-
-draw()
+draw(label)
 
 
 # Execute tkinter
 root.mainloop()
+
+#END of Tkinter----------------------------------------------------------------------------------------
+
+current_state = Astar_randomizer(solved_state, 10)
+Astar(current_state)
