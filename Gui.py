@@ -1,5 +1,3 @@
-import numpy as np
-import pygame
 from tkinter import *
 from math import floor
 import random
@@ -37,7 +35,7 @@ def draw(label):
                 case 11:
                     label[i][j]["bg"] = "#808A87"
     
-    print("hueristic value: ", hueristic())
+    print("hueristic value: ", hueristic(current_state))
 
 def turn():
     global current_state
@@ -57,63 +55,65 @@ def randomizer():
     
 def Astar_randomizer(current_state, turns):
     for i in range(turns):
-        current_state = [current_state[i] for i in MOVES[int(random.randint(0, 23))]]
+        move = int(random.randint(0, 11))
+        print("move ", i, ": ", move)
+        current_state = [current_state[i] for i in MOVES[move]]
     return current_state
         
-def hueristic():
+def hueristic(state):
     counter = 0
     for i in range(132):
-        if solved_state[i] != current_state[i]:
+        if solved_state[i] != state[i]:
             counter += 1
     return math.ceil(counter/15)
 
 def Astar(starting_state):
-    print("here")
-    open_set = set(starting_state)
+    solved_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
+    open_set = set()
+    open_set.add(tuple((starting_state)))
     closed_set = set()
-    id = 0
-    states = {}
-    states[id] = starting_state
     g = {}
-    g[id] = 0
+    g[tuple((starting_state))] = 0
 
     parents = {}
-    parents[starting_state] = None #starting state does not have a parent_node
+    parents[tuple((starting_state))] = None #starting state does not have a parent_node
     temp_state = starting_state
-
     while len(open_set) > 0:
         next = None
 
         #PRIORITY QUEUE
         for i in open_set:
-            if next == None or g[i] + hueristic(i) < g[next] + hueristic(next):
+            if next == None or g[tuple((i))] + hueristic(i) < g[tuple((next))] + hueristic(next):
                 next = i
         
         if next != solved_state:
-            for i in range(Amt_Moves):
+            for i in range(11,24):
                 temp_state = [next[j] for j in MOVES[i]]
-                if temp_state not in open_set and temp_state not in closed_set:
-                    open_set.add(temp_state)
-                    parents[temp_state] = next
-                    g[temp_state] = g[next] + hueristic(temp_state)
+                temp_state_tuple = tuple(([next[j] for j in MOVES[i]]))
+                if temp_state_tuple not in open_set and temp_state_tuple not in closed_set:
+                    open_set.add(temp_state_tuple)
+                    parents[temp_state_tuple] = next
+                    g[temp_state_tuple] = g[tuple((next))]
                 else:
-                    if g[temp_state] > g[next] + hueristic(temp_state):
-                        g[temp_state] = g[next] + hueristic(temp_state)
-                        parents[temp_state] = next
+                    if g[temp_state_tuple] + hueristic(temp_state_tuple) > g[tuple((next))] + hueristic(temp_state):
+                        g[temp_state_tuple] = g[tuple((next))]
+                        parents[temp_state_tuple] = next
 
-                        if temp_state in closed_set:
-                            closed_set.remove(temp_state)
-                            open_set.add(temp_state)
+                        if temp_state_tuple in closed_set:
+                            closed_set.remove(temp_state_tuple)
+                            open_set.add(temp_state_tuple)
         elif next == solved_state:
+            open_set = ()
             moves = []
 
-            while parents[next]:
-                moves.append(findMove(next, parents[next]))
+            while parents[tuple((next))]:
+                moves.append(findMove(next, parents[tuple((next))]))
             moves.reverse()
             print('Moves: ', moves)
         else:
             raise Exception("Sorry, no numbers below zero")
-
+        print(open_set)
+        open_set = ()
 
 def findMove(state, end_state):
     for i in range(Amt_Moves):
@@ -297,13 +297,13 @@ button = Button( root , text = "Turn Side" , command = turn )
 button.pack()
 button2 = Button( root , text = "Randomize" , command = randomizer)
 button2.pack()
-draw(label)
+#draw(label)
 
 
 # Execute tkinter
-root.mainloop()
+#root.mainloop()
 
 #END of Tkinter----------------------------------------------------------------------------------------
 
-current_state = Astar_randomizer(solved_state, 10)
+current_state = Astar_randomizer(solved_state, 1)
 Astar(current_state)
