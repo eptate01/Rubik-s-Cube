@@ -2,6 +2,7 @@ from tkinter import *
 from math import floor
 import random
 import math
+import matplotlib.pyplot as plt
 Amt_Moves = 24
 
 def draw(label, label_state): #for the gui, this assigns the label for every square in the gui. draw function only assigns label, it doesn't update the window
@@ -65,6 +66,7 @@ def hueristic(state): #hueristic goes through every face and checks if it matche
     return math.ceil(counter/15) #15 faces can be different at one time, and round up
 
 def Astar(starting_state):
+    nodesVisited = 0
     solved_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
     open_set = set() #this is a set of all the states that haven't been looped through or can be looped through with a lesser g value. the states are saved as tuples, not lists
     open_set.add(tuple((starting_state)))
@@ -82,6 +84,8 @@ def Astar(starting_state):
         for i in open_set:
             if next == None or g[tuple((i))] + hueristic(i) < g[tuple((next))] + hueristic(next):
                 next = i
+        nodesVisited += 1
+
         if (next == tuple(solved_state)):
             open_set = set()
             moves = []
@@ -91,8 +95,9 @@ def Astar(starting_state):
                 next = parents[tuple(next)]
             moves.reverse()
             print('Moves: ', moves)
-            return moves
+            return moves, nodesVisited
         else:
+            print(nodesVisited)
             for i in range(0,24):
                 temp_state = [next[j] for j in MOVES[i]]
                 temp_state_tuple = tuple(([next[j] for j in MOVES[i]]))
@@ -111,16 +116,35 @@ def Astar(starting_state):
         open_set.remove(next)
         closed_set.add(next)
         
-def AstarFunc():
+def AstarFunc(): #For Gui Use
     global current_state
     current_state = Astar_randomizer(solved_state, numTurns)
     draw(label, current_state)
-    move = Astar(current_state)
+    move, count = Astar(current_state)
     for j in move:
         root.update()
         root.after(2000)
         current_state = [current_state[i] for i in MOVES[j]]
         draw(label, current_state)
+
+def AstarLoop(): #For K values
+    xaxis = []
+    graph = []
+    for k in range(3,8):
+        xaxis.append(k)
+        averageNodesExpanded = 0
+        for i in range(0,3):
+            temp_state = Astar_randomizer(solved_state, k)
+            moves, NodesExpanded = Astar(temp_state)
+            averageNodesExpanded += NodesExpanded
+        graph.append(averageNodesExpanded/3)
+    print(xaxis, graph)
+    plt.plot(xaxis, graph)
+    plt.ylabel('some numbers')
+    plt.show()
+
+
+
         
 
 def findMove(state, end_state):
@@ -307,11 +331,11 @@ button2 = Button( root , text = "Randomize" , command = randomizer)
 button2.pack()
 button3 = Button(root, text = "Astar + randomize", command = AstarFunc)
 button3.pack()
-draw(label, current_state)
+#draw(label, current_state)
 
 
 # Execute tkinter
-root.mainloop()
+#root.mainloop()
 
 #END of Tkinter----------------------------------------------------------------------------------------
-
+AstarLoop()
