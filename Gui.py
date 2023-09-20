@@ -4,6 +4,9 @@ import random
 import math
 import matplotlib.pyplot as plt
 Amt_Moves = 24
+current_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
+solved_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
+numTurns = int(input("For randomizer, how many random turns would you like? (difficulty) "))
 
 def draw(label, label_state): #for the gui, this assigns the label for every square in the gui. draw function only assigns label, it doesn't update the window
     for i in range(len(label)):
@@ -71,41 +74,39 @@ def Astar(starting_state):
     open_set = set() #this is a set of all the states that haven't been looped through or can be looped through with a lesser g value. the states are saved as tuples, not lists
     open_set.add(tuple((starting_state)))
     closed_set = set() # a set of states that have been gone through
-    g = {}
+    g = {} #this is a dictionary giving the g values for every state
     g[tuple((starting_state))] = 0
 
-    parents = {}
+    parents = {} #dictionary of the parent node
     parents[tuple((starting_state))] = None #starting state does not have a parent_node
     temp_state = starting_state
-    while len(open_set) > 0:
-        next = None
+    while len(open_set) > 0: #while the open_set is not null
+        next = None #next is the node you are currently working on
 
         #PRIORITY QUEUE
         for i in open_set:
             if next == None or g[tuple((i))] + hueristic(i) < g[tuple((next))] + hueristic(next):
                 next = i
-        nodesVisited += 1
+        nodesVisited += 1 #you just started a visit to a node
 
-        if (next == tuple(solved_state)):
-            open_set = set()
+        if (next == tuple(solved_state)): #if this node is a solved state
             moves = []
 
-            while parents[tuple((next))]:
+            while parents[tuple((next))]: #find the moves that got to this solved state
                 moves.append(findMove(parents[tuple(next)],next ))
                 next = parents[tuple(next)]
             moves.reverse()
             print('Moves: ', moves)
             return moves, nodesVisited
         else:
-            print(nodesVisited)
             for i in range(0,24):
-                temp_state = [next[j] for j in MOVES[i]]
-                temp_state_tuple = tuple(([next[j] for j in MOVES[i]]))
-                if temp_state_tuple not in open_set and temp_state_tuple not in closed_set:
+                temp_state = [next[j] for j in MOVES[i]] #preform the moves
+                temp_state_tuple = tuple(([next[j] for j in MOVES[i]])) #store move as a tuple
+                if temp_state_tuple not in open_set and temp_state_tuple not in closed_set: #if this state has not been reached, add it to open_set
                     open_set.add(temp_state_tuple)
                     parents[temp_state_tuple] = next
                     g[temp_state_tuple] = g[tuple((next))]+1
-                else:
+                else: #if the state has been reached, check if it has a lower g value than the other time it was reached. If it has a lower g value then add it to open_set
                     if g[temp_state_tuple] + hueristic(temp_state_tuple) > g[tuple((next))] + hueristic(temp_state):
                         g[temp_state_tuple] = g[tuple((next))]+1
                         parents[temp_state_tuple] = next
@@ -113,24 +114,24 @@ def Astar(starting_state):
                         if temp_state_tuple in closed_set:
                             closed_set.remove(temp_state_tuple)
                             open_set.add(temp_state_tuple)
-        open_set.remove(next)
+        open_set.remove(next) #remove the variable from open_set and add to closed_set
         closed_set.add(next)
         
 def AstarFunc(): #For Gui Use
     global current_state
-    current_state = Astar_randomizer(solved_state, numTurns)
-    draw(label, current_state)
-    move, count = Astar(current_state)
+    current_state = Astar_randomizer(solved_state, numTurns) #randomize
+    draw(label, current_state) #draw
+    move, count = Astar(current_state) #get moves from Astar
     for j in move:
-        root.update()
-        root.after(2000)
-        current_state = [current_state[i] for i in MOVES[j]]
-        draw(label, current_state)
+        root.update()#update gui
+        root.after(2000)#wait before updating a gui so user can see process
+        current_state = [current_state[i] for i in MOVES[j]] #make the move recommended by Astar
+        draw(label, current_state) #create label so when root updates, the gui has the new state loaded
 
 def AstarLoop(): #For K values
     xaxis = []
     graph = []
-    for k in range(3,8):
+    for k in range(3,8): #k-values for how many rotations
         xaxis.append(k)
         averageNodesExpanded = 0
         for i in range(0,3):
@@ -142,10 +143,6 @@ def AstarLoop(): #For K values
     plt.plot(xaxis, graph)
     plt.ylabel('some numbers')
     plt.show()
-
-
-
-        
 
 def findMove(state, end_state):
     for i in range(Amt_Moves):
@@ -192,11 +189,6 @@ MOVES = {0:[0, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 11, 76, 67, 68, 15, 16, 17, 18, 19
         21: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 38, 39, 40, 30, 31, 32, 33, 34, 35, 36, 37, 92, 93, 94, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 116, 117, 118, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 60, 61, 62, 95, 96, 97, 98, 99, 102, 103, 104, 105, 106, 107, 108, 109, 100, 101, 110, 111, 112, 113, 114, 115, 27, 28, 29, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131],
         22: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 29, 30, 31, 21, 22, 23, 24, 25, 26, 27, 28, 101, 102, 103, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 125, 126, 127, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 58, 59, 60, 104, 105, 106, 107, 108, 109, 110, 113, 114, 115, 116, 117, 118, 119, 120, 111, 112, 121, 122, 123, 124, 18, 19, 20, 128, 129, 130, 131],
         23: [0, 12, 2, 3, 4, 5, 6, 7, 8, 20, 21, 11, 112, 13, 14, 15, 16, 17, 18, 19, 120, 111, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 79, 80, 81, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 9, 10, 1, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 57, 58, 113, 114, 115, 116, 117, 118, 119, 56, 121, 124, 125, 126, 127, 128, 129, 130, 131, 122, 123]}
-
-current_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
-solved_state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
-numTurns = int(input("For randomizer, how many random turns would you like? (difficulty) "))
-
 
 
 #Creating Tkinter-----------------------------------------------------------------------------------------------------------
