@@ -134,21 +134,20 @@ def AstarLoop(): #For K values
     for k in range(3,8): #k-values for how many rotations
         xaxis.append(k)
         averageNodesExpanded = 0
-        for i in range(0,3):
+        for i in range(0,3): #run 3 samples for k
             temp_state = Astar_randomizer(solved_state, k)
             moves, NodesExpanded = Astar(temp_state)
             averageNodesExpanded += NodesExpanded
-        graph.append(averageNodesExpanded/3)
+        graph.append(averageNodesExpanded/3) #put the average nodes expanded in a list to graph
     print(xaxis, graph)
     plt.plot(xaxis, graph)
-    plt.ylabel('some numbers')
     plt.show()
 
 def findMove(state, end_state):
     for i in range(Amt_Moves):
         if end_state == tuple([state[j] for j in MOVES[i]]):
             return i
-    raise Exception("Sorry, no numbers below zero")          
+    raise Exception("Move Not available")          
 
 COLORS = {
 '0': 'black',
@@ -323,11 +322,11 @@ button2 = Button( root , text = "Randomize" , command = randomizer)
 button2.pack()
 button3 = Button(root, text = "Astar + randomize", command = AstarFunc)
 button3.pack()
-#draw(label, current_state)
+draw(label, current_state)
 
 
 # Execute tkinter
-#root.mainloop()
+root.mainloop()
 
 #END of Tkinter----------------------------------------------------------------------------------------
 AstarLoop()

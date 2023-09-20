@@ -1,0 +1,21 @@
+The data structure I used in this project was the same as my last project, where I used a list of 132 numbers each corresponding to a face on the megaminx.
+The integer in that spot corresponds to a color and if all the colors are in the right spot, then the megaminx
+is in a solved_state.
+
+The heuristic I used for this was looking at each of the 132 faces and checking how many of the faces are not in sync with the center they are next to.
+Every time you spin a side, 15 faces move to be next to another center, so you decided the amount of faces out of place and divide by 15.
+You will always need at least that many turns to get to a solved state.
+
+In my Astar algorithm, I used two sets and two dictionaries. The first set (open_set) was my priority queue, a list of all the nodes I could visit. 
+My second set was called closed_set and it was all the states I had already tested. The dictionary I used held the values
+of all the states I had tested. A quick note is that I had to change my states into tuple's very often through this process to work in sets and dictionaries, since lists can't work like that.
+The second dictionary I used was parents and this holds the parent node of each node.
+
+When you run the code you are asked a question of how many randomizations you want, this question works within the gui
+for when you hit the randomize or Astar Randomize buttons. If you put more than 7, the Astar randomize button will probably time you out.
+After you're done with the gui, you can close the gui and the rest of the program will run, which will preform from k = 3 to k = 7 three times each
+and print the random moves and the moves to get back to the normal state. It will then plot the nodes visited on average for each k.
+
+In this assignment I got more familiar with working with Tuple's in python as well as learning a lot more about gui interaction as I continued to update the gui that was given to me by my classmate (credit given in comments on canves)
+I also learned more about a good heuristic and why it is so important. Since my heuristic had up to 8 as a possibility, it worked much faster.
+I learned a lot about the Astar algorithm and how to implement it, I also learned about the downside of the Astar algorithm where it takes up tons of space and memory.
